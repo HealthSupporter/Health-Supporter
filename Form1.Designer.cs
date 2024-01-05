@@ -893,6 +893,8 @@
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Health Supporter";
             TopMost = true;
+            FormClosing += ExerciseApp_FormClosing;
+            Leave += ExerciseApp_Leave;
             Resize += ExerciseApp_Resize;
             sysSettingGBox.ResumeLayout(false);
             sysSettingGBox.PerformLayout();

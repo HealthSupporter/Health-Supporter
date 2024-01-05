@@ -18,6 +18,7 @@ namespace ExerciseApp
         private DateTime wakeDateTime;
         private System.Timers.Timer sleepTimer;
         private AppConfiguration currentConfigs;
+        private string processName;
 
         public List<string> vidPath = [""];
         public List<int> corrupted_VidPath_Index = [-1];

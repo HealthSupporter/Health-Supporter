@@ -3,6 +3,8 @@
 using IWshRuntimeLibrary;
 using System.Timers;
 using SelfImplement_Libraries;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace ExerciseApp
 {
@@ -28,7 +30,7 @@ namespace ExerciseApp
             }
 
             try
-            { 
+            {
 
                 string[] configs = currentConfigs.GetListOfValue();
                 vidPath[0] = configs[0];
@@ -95,8 +97,10 @@ namespace ExerciseApp
                 MessageBox.Show(string.Format("Không thể sử dụng thiết lập có sẵn!\nLỗi: {0}", e.Message), "Warning");
             }
 
+            processName = Process.GetCurrentProcess().ProcessName;
 
             stubInitialize();
+            Invalidate();   // Redraw the windows
             // End user generated code ----
 
             // In progress
@@ -170,8 +174,8 @@ namespace ExerciseApp
         private void getHelpMSG()
         {
             string[] input = [];
-            try { input = System.IO.File.ReadAllLines($"{processPath}\\{helpMsgPath}"); } 
-            catch 
+            try { input = System.IO.File.ReadAllLines($"{processPath}\\{helpMsgPath}"); }
+            catch
             {
                 MessageBox.Show("Không tìm thấy tệp help.txt, ngắt quyền truy cập vào tab Trợ giúp.", "Lỗi không tìm thấy tệp");
                 helpPanel.Enabled = false;
@@ -183,55 +187,57 @@ namespace ExerciseApp
                 helpTextBox.AppendText($"{item}");
                 helpTextBox.AppendText(Environment.NewLine);
             }
+
+            lastProcess = GetCurrentProcess();
         }
 
 
         private void makeNewConfig()
         {
-                // MessageBox.Show(string.Format("Không thể tìm thấy tệp current_config.cfg trong thư mục cài đặt."));
+            // MessageBox.Show(string.Format("Không thể tìm thấy tệp current_config.cfg trong thư mục cài đặt."));
 
-                currentConfigs = new AppConfiguration(configPath, configNames);
-                currentConfigs.Edit(configNames,
-                    [
-                        string.Format(@"{0}\Asset\Default\default_video.mp4", processPath),
-                        "1",
-                        "False",
-                        "False",
-                        "False",
-                        "False",
-                        "0",
-                        "30",
-                        "0",
-                        "0",
-                        "5",
-                        "0",
-                        "False",
-                        DateTime.Now.AddHours(2).ToString(),
-                        "0",
-                        "0",
-                        "0"
-                    ]
-                    );
+            currentConfigs = new AppConfiguration(configPath, configNames);
+            currentConfigs.Edit(configNames,
+                [
+                    string.Format(@"{0}\Asset\Default\default_video.mp4", processPath),
+                    "1",
+                    "False",
+                    "False",
+                    "False",
+                    "False",
+                    "0",
+                    "30",
+                    "0",
+                    "0",
+                    "5",
+                    "0",
+                    "False",
+                    DateTime.Now.AddHours(2).ToString(),
+                    "0",
+                    "0",
+                    "0"
+                ]
+                );
 
-                vidPath[0] = processPath + @"\Asset\Default\default_video.mp4";
-                num_videos = 1;
-                play_random = false;
-                multiple_videos = false;
-                continuePlay = true;
-                startWithSystem = false;
-                multiple_videos = false;
-                currentHourConfig = 0;
-                currentMinuteConfig = 30;
-                currentSecondConfig = 0;
-                currentStopHourConfig = 0;
-                currentStopMinuteConfig = 5;
-                currentStopSecondConfig = 0;
-                useSleepPicker = false;
-                currentSleepDateTimeConfig = DateTime.Now.AddHours(2);
-                currentSleepHourConfig = 0;
-                currentSleepMinConfig = 0;
-                currentSleepSecConfig = 0;
-                saveConfig();
+            vidPath[0] = processPath + @"\Asset\Default\default_video.mp4";
+            num_videos = 1;
+            play_random = false;
+            multiple_videos = false;
+            continuePlay = true;
+            startWithSystem = false;
+            multiple_videos = false;
+            currentHourConfig = 0;
+            currentMinuteConfig = 30;
+            currentSecondConfig = 0;
+            currentStopHourConfig = 0;
+            currentStopMinuteConfig = 5;
+            currentStopSecondConfig = 0;
+            useSleepPicker = false;
+            currentSleepDateTimeConfig = DateTime.Now.AddHours(2);
+            currentSleepHourConfig = 0;
+            currentSleepMinConfig = 0;
+            currentSleepSecConfig = 0;
+            saveConfig();
         }
 
         private void saveConfig()
@@ -424,11 +430,34 @@ namespace ExerciseApp
 
         private void showNotification(string title, string msg)
         {
+            notifyIcon1.Visible = true;
             string old_tttext = notifyIcon1.BalloonTipText;
             notifyIcon1.BalloonTipText = msg;
             notifyIcon1.BalloonTipTitle = title;
             notifyIcon1.ShowBalloonTip(3000);
             notifyIcon1.BalloonTipText = old_tttext;
+            notifyIcon1.Visible = false;
+        }
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll", SetLastError = false)]
+        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+        private string GetCurrentProcess()
+        {
+            IntPtr hWnd = GetForegroundWindow();
+            uint procId = 0;
+            GetWindowThreadProcessId(hWnd, out procId);
+            var proc = Process.GetProcessById((int)procId);
+            return proc.ProcessName;
+        }
+
+        private void ExerciseApp_Leave(object sender, EventArgs e)
+        {
+            this.TopMost = false;
+            this.SendToBack();
         }
     }
 }

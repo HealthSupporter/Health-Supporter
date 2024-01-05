@@ -1,4 +1,6 @@
 ﻿using SelfImplement_Libraries;
+using System.Diagnostics;
+using System.Net.Http.Headers;
 
 namespace ExerciseApp
 {
@@ -15,6 +17,7 @@ namespace ExerciseApp
             sysSettingsPanel.Visible = false;
             helpPanel.Visible = false;
             mainPanel.BringToFront();
+            Invalidate();
         }
 
         private void setTimerButton_Click(object sender, EventArgs e)
@@ -25,6 +28,7 @@ namespace ExerciseApp
             sysSettingsPanel.Visible = false;
             helpPanel.Visible = false;
             timeSettingsPanel.BringToFront();
+            Invalidate();
         }
 
         private void videoSettingsButton_Click(object sender, EventArgs e)
@@ -35,6 +39,7 @@ namespace ExerciseApp
             sysSettingsPanel.Visible = false;
             helpPanel.Visible = false;
             videoSettingsPanel.BringToFront();
+            Invalidate();
         }
 
         private void settingsButton_Click(object sender, EventArgs e)
@@ -45,6 +50,7 @@ namespace ExerciseApp
             sysSettingsPanel.Visible = true;
             helpPanel.Visible = false;
             sysSettingsPanel.BringToFront();
+            Invalidate();
         }
 
         //------------ mainPanel ------------
@@ -53,7 +59,10 @@ namespace ExerciseApp
             OpenFileDialog openFileDialog = new OpenFileDialog()
             {
                 Title = "Chọn video",
-                Filter = string.Format("Tệp video ({0}) | {0}", supportedFileType)
+                Filter = string.Format("Tệp video ({0}) | {0}", supportedFileType),
+                Multiselect = true,
+                InitialDirectory = System.Environment.GetEnvironmentVariable("USERPROFILE"),
+                RestoreDirectory = true
             };
             openFileDialog.Multiselect = true;
             DialogResult dialogResult = openFileDialog.ShowDialog();
@@ -304,11 +313,27 @@ namespace ExerciseApp
         {
             timer1.Stop();
             timer2.Stop();
-            using (Form2 subForm = new Form2(this))
+            timeLabel.Text = "0:00:00";
+
+            this.WindowState = FormWindowState.Normal;
+            notifyIcon1.Visible = false;
+            this.ShowInTaskbar = true;
+            this.TopMost = true;
+            this.Show();
+
+            var result = MessageBox.Show("Đã đến giờ nghỉ, bạn có muốn nghỉ ngơi và tập thể dục không?", "Đã đến giờ", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (result == DialogResult.Yes)
             {
-                subForm.Bounds = screenResolution;
-                subForm.FormClosed += new FormClosedEventHandler(subForm_closed);
-                subForm.ShowDialog();
+                using (Form2 subForm = new Form2(this))
+                {
+                    subForm.Bounds = screenResolution;
+                    subForm.FormClosed += new FormClosedEventHandler(subForm_closed);
+                    subForm.ShowDialog();
+                }
+            } else
+            {
+                FormClosedEventArgs tmp = new FormClosedEventArgs(CloseReason.None);
+                subForm_closed(sender, tmp);
             }
         }
 
@@ -411,7 +436,11 @@ namespace ExerciseApp
 
         private void ExerciseApp_Resize(object sender, EventArgs e)
         {
-            if (doubleClicked) return;
+            if (doubleClicked)
+            {
+                // doubleClicked = false;
+                return;
+            };
             if (FormWindowState.Minimized == this.WindowState)
             {
                 notifyIcon1.Visible = true;
@@ -420,8 +449,10 @@ namespace ExerciseApp
                     firstRun = false;
                     notifyIcon1.ShowBalloonTip(3000);
                 }
-                this.Hide();
+                this.ShowInTaskbar = false;
+                // this.Hide();
             }
+            Invalidate();
         }
 
         private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs? e)
@@ -430,8 +461,9 @@ namespace ExerciseApp
             this.WindowState = FormWindowState.Normal;
             notifyIcon1.Visible = false;
             this.ShowInTaskbar = true;
-            this.TopMost = true;
             this.Show();
+            this.BringToFront();
+            Invalidate();
         }
 
         private void timer2_Tick(object sender, EventArgs e)
@@ -698,6 +730,11 @@ namespace ExerciseApp
         private ulong target_tick = 0;
         private bool useSleep = false;
 
+        private string lastProcess;
+        private int interval = 0;
+        private string process;
+        
+
         private void mainTimer_Tick(object sender, EventArgs e)
         {
             if (useSleep) tick++;
@@ -715,6 +752,30 @@ namespace ExerciseApp
                 sleepTimer.Interval = wakeDateTime.ToTick() - DateTime.Now.ToTick();
                 sleepTimer.Start();
                 showInfo_viaNotifyIcon("Đã vào trạng thái ngủ");
+            }
+
+            interval++;
+            if (interval == 500)
+            {
+                try
+                {
+                    process = GetCurrentProcess();
+                } catch (Exception)
+                {
+
+                }
+                interval = 0;
+            }
+
+            if (processName != process)
+            {
+                lastProcess = process;
+                this.TopMost = false;
+                this.SendToBack();
+                this.Hide();
+            } else
+            {
+                this.Show();
             }
 
             playRandomCheckBox.Enabled = multiple_videos;
@@ -743,6 +804,22 @@ namespace ExerciseApp
             startCountButton.Click += startCountButton_Click;
             resetCountButton.Click += resetCountButton_Click;
             stopCountButton.Click += stopCountButton_Click;
+        }
+
+        private void ExerciseApp_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (timer1.Enabled || timer2.Enabled || stateLocked)
+            {
+                var result = MessageBox.Show("Ứng dụng đang chạy, bạn có chắc chắn muốn thoát không?", "Đóng ứng dụng", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (result == DialogResult.Yes)
+                {
+                    return;
+                }
+                else
+                {
+                    e.Cancel = true;
+                }
+            }
         }
     }
 }
