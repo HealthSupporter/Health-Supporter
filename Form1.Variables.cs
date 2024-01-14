@@ -49,11 +49,12 @@ namespace ExerciseApp
 
         // Constants -------------------------------------------------------
         private const string assetPath = @"Asset\";
-        private const string defaultVideo = @"Asset\Default\default_video.mp4";
+        private const string defaultVideo = @"Asset\Default\default_video1.mp4";
         public const string configPath = "current_config.conf";
         public const string helpMsgPath = @"Asset\help.txt";
         public const string supportedFileType = "*.mpg;*.avi;*.wma;*.mov;*.wav;*.mp2;*.mp4";
         public readonly string[] countState = ["ĐANG DỪNG", "ĐANG CHẠY"];
+        public readonly string appVersion = "2.1.4 (Offical)";
 
 
         public readonly string[] configNames = [

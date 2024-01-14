@@ -70,7 +70,7 @@ namespace ExerciseApp
             mainLabel.Font = new Font("Arial Narrow", 24F);
             mainLabel.Location = new Point(199, 4);
             mainLabel.Name = "mainLabel";
-            mainLabel.Size = new Size(387, 37);
+            mainLabel.Size = new Size(487, 46);
             mainLabel.TabIndex = 1;
             mainLabel.Text = "ĐẾN GIỜ TẬP THỂ DỤC RỒI";
             // 

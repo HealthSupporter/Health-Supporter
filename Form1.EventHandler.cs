@@ -737,37 +737,15 @@ namespace ExerciseApp
 
         private void mainTimer_Tick(object sender, EventArgs e)
         {
-            if (useSleep) tick++;
-            else tick = 0;
-
-            if (tick == sleep_tick && sleepState == false && useSleepPicker == true)
+            try
             {
-                sleepState = true;
+                process = GetCurrentProcess();
+            } catch (Exception)
+            {
 
-                startCountButton.Click -= startCountButton_Click;
-                resetCountButton.Click -= resetCountButton_Click;
-                stopCountButton.Click -= stopCountButton_Click;
-
-                useSleepPicker = useSleepPickerCheckBox.Checked = true;
-                sleepTimer.Interval = wakeDateTime.ToTick() - DateTime.Now.ToTick();
-                sleepTimer.Start();
-                showInfo_viaNotifyIcon("Đã vào trạng thái ngủ");
             }
 
-            interval++;
-            if (interval == 500)
-            {
-                try
-                {
-                    process = GetCurrentProcess();
-                } catch (Exception)
-                {
-
-                }
-                interval = 0;
-            }
-
-            if (processName != process)
+            /* if (processName != process)
             {
                 lastProcess = process;
                 this.TopMost = false;
@@ -777,6 +755,7 @@ namespace ExerciseApp
             {
                 this.Show();
             }
+            */
 
             playRandomCheckBox.Enabled = multiple_videos;
             

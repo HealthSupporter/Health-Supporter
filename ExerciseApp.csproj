@@ -14,8 +14,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\icon.ico" />
-    <None Remove="Resources\mainIcon.png" />
     <None Remove="Resources\pause.png" />
     <None Remove="Resources\play.png" />
     <None Remove="Resources\quit.png" />
@@ -66,8 +64,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\icon.ico" />
-    <EmbeddedResource Include="Resources\mainIcon.png" />
     <EmbeddedResource Include="Resources\pause.png" />
     <EmbeddedResource Include="Resources\play.png" />
     <EmbeddedResource Include="Resources\quit.png" />

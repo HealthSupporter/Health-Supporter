@@ -1,9 +1,8 @@
-﻿using ExerciseApp.Properties;
-using Leadtools.Multimedia;
+﻿#nullable disable
+using WMPLib;
+
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Timers;
-using WMPLib;
 
 namespace ExerciseApp
 {
@@ -16,19 +15,24 @@ namespace ExerciseApp
         private Random randomIndex = new Random();
         private bool pause_for_reason = false;
 
+        private string[] videoFiles;
+        private int playingIndex = 0;
+
 
         public Form2()
         {
-            KeyboardLLProcedure = new HookProc(KeyboardLLProc);
-            hHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardLLProcedure, (IntPtr)0, 0);
+            ProcessModule objCurrentModule = Process.GetCurrentProcess().MainModule;
+            objKeyboardProcess = new LowLevelKeyboardProc(captureKey);
+            ptrHook = SetWindowsHookEx(13, objKeyboardProcess, GetModuleHandle(objCurrentModule.ModuleName), 0);
             InitializeComponent();
         }
 
         private ExerciseApp mainForm = new();
         public Form2(Form callingForm)
         {
-            KeyboardLLProcedure = new HookProc(KeyboardLLProc);
-            hHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardLLProcedure, (IntPtr)0, 0);
+            ProcessModule objCurrentModule = Process.GetCurrentProcess().MainModule;
+            objKeyboardProcess = new LowLevelKeyboardProc(captureKey);
+            ptrHook = SetWindowsHookEx(13, objKeyboardProcess, GetModuleHandle(objCurrentModule.ModuleName), 0);
             mainForm = (ExerciseApp)callingForm;
             InitializeComponent();
         }
@@ -68,8 +72,8 @@ namespace ExerciseApp
             axWindowsMediaPlayer1.settings.autoStart = true;
             axWindowsMediaPlayer1.Ctlcontrols.next();
 
-            mainLabel.Location = new Point(resolution.Width / 2 - mainLabel.Bounds.Width / 2, 20);
-            
+            mainLabel.Location = new Point((resolution.Width / 2) - (mainLabel.Bounds.Width / 2), 20);
+
             double dur = getDuration(axWindowsMediaPlayer1.URL);
             timer1.Interval = Convert.ToInt32(dur) * 1000;
             timer2.Interval = 1000;
@@ -163,14 +167,9 @@ namespace ExerciseApp
 
         private void Form2_Closing(object sender, FormClosingEventArgs e)
         {
-            if (e.CloseReason == CloseReason.WindowsShutDown)
+            if (e.CloseReason == CloseReason.WindowsShutDown || performClose == true)
             {
-                UnhookWindowsHookEx(hHook);
-                return;
-            }
-            if (performClose)
-            {
-                UnhookWindowsHookEx(hHook);
+                UnhookWindowsHookEx(ptrHook);
                 return;
             }
 
@@ -199,75 +198,52 @@ namespace ExerciseApp
         }
 
         /* Code to Disable WinKey, Alt+Tab, Ctrl+Esc Starts Here */
-        public const int WH_KEYBOARD_LL = 13;
-
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        public struct MSLLHOOKSTRUCT
+        /* https://itecnote.com/tecnote/c-how-to-suppress-task-switch-keys-winkey-alt-tab-alt-esc-ctrl-esc-using-low-level-keyboard-hook-in-c/ */
+        // Structure contain information about low-level keyboard input event 
+        [StructLayout(LayoutKind.Sequential)]
+        private struct KBDLLHOOKSTRUCT
         {
-            public Point pt;
-            public int mouseData;
-            public int flags;
-            public int time;
-            public uint dwExtraInfo;
-        }
-
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        public struct KBDLLHOOKSTRUCT
-        {
-            public int vkCode;
+            public Keys key;
             public int scanCode;
             public int flags;
             public int time;
-            public uint dwExtraInfo;
+            public IntPtr extra;
         }
+        //System level functions to be used for hook and unhook keyboard input  
+        private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr SetWindowsHookEx(int id, LowLevelKeyboardProc callback, IntPtr hMod, uint dwThreadId);
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern bool UnhookWindowsHookEx(IntPtr hook);
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr CallNextHookEx(IntPtr hook, int nCode, IntPtr wp, IntPtr lp);
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr GetModuleHandle(string name);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern short GetAsyncKeyState(Keys key);
+        //Declaring Global objects     
+        private IntPtr ptrHook;
+        private LowLevelKeyboardProc objKeyboardProcess;
 
-        public delegate int HookProc(int nCode, IntPtr wParam, IntPtr lParam);
-
-        [DllImport("User32.dll", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
-        public static extern int SetWindowsHookEx(int idHook, HookProc lpfn, IntPtr hInstance, int threadId);
-
-        [DllImport("User32.dll", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
-        public static extern bool UnhookWindowsHookEx(int idHook);
-
-        [DllImport("User32.dll", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
-        public static extern int CallNextHookEx(int idHook, int nCode, IntPtr wParam, IntPtr lParam);
-
-        static int hHook = 0;
-        HookProc KeyboardLLProcedure;
-
-        public const int WM_KEYDOWN = 0x0100;
-        public const int WM_SYSKEYDOWN = 0x0104;
-        public const int VK_SHIFT = 0x10;
-        public const int VK_MENU = 0x12;
-
-        [LibraryImport("User32.dll", SetLastError = true)]
-        private static partial short GetAsyncKeyState(System.Windows.Forms.Keys vKey);
-
-        public static int KeyboardLLProc(int nCode, IntPtr wParam, IntPtr lParam)
+        private IntPtr captureKey(int nCode, IntPtr wp, IntPtr lp)
         {
             if (nCode >= 0)
             {
-                bool bShiftKeyDown = GetAsyncKeyState((Keys)VK_SHIFT) < 0;
-                bool bAltKeyDown = GetAsyncKeyState((Keys)VK_MENU) < 0;
-                KBDLLHOOKSTRUCT pKBDLLHOOKSTRUCT = new();
-                pKBDLLHOOKSTRUCT = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, pKBDLLHOOKSTRUCT.GetType())!;
+                KBDLLHOOKSTRUCT objKeyInfo = (KBDLLHOOKSTRUCT) Marshal.PtrToStructure(lp, typeof(KBDLLHOOKSTRUCT));
 
+                // Disabling Windows keys 
 
-                switch (pKBDLLHOOKSTRUCT.vkCode)
+                if (objKeyInfo.key == Keys.RWin || objKeyInfo.key == Keys.LWin || objKeyInfo.key == Keys.Tab && HasAltModifier(objKeyInfo.flags) || objKeyInfo.key == Keys.Escape && (ModifierKeys & Keys.Control) == Keys.Control)
                 {
-                    case (short)Keys.LWin:              // Windows button
-                        return 1;
-
-                    case (short)Keys.F4:                // Alt + F4
-                    case (short)Keys.Tab:               // Alt + Tab
-                        if (bAltKeyDown) return 1;
-                        else break;
-
-                    default:
-                        break;
+                    return (IntPtr)1; // if 0 is returned then All the above keys will be enabled
                 }
             }
-            return nCode < 0 ? CallNextHookEx(hHook, nCode, wParam, lParam) : 0;
+            return CallNextHookEx(ptrHook, nCode, wp, lp);
+        }
+
+        bool HasAltModifier(int flags)
+        {
+            return (flags & 0x20) == 0x20;
         }
         /* Code to Disable WinKey, Alt+Tab, Ctrl+Esc Ends Here */
     }

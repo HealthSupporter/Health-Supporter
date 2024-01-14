@@ -5,6 +5,7 @@ using System.Timers;
 using SelfImplement_Libraries;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Windows.Media.Imaging;
 
 namespace ExerciseApp
 {
@@ -53,8 +54,8 @@ namespace ExerciseApp
 
                 if (!validateTargetFile(vidPath[0], supportedFileType))
                 {
-                    MessageBox.Show("Tệp media trong thiết lập không phù hợp định dạng");
-                    vidPath[0] = "";
+                    MessageBox.Show("Tệp media trong thiết lập không phù hợp định dạng. Sử dụng video mặc định.");
+                    vidPath[0] = processPath + defaultVideo;
                 }
 
                 hourUpDown.Value = currentHourConfig;
@@ -84,12 +85,6 @@ namespace ExerciseApp
                 else
                 {
                     DeleteShortcut();
-                }
-
-                if (!validateTarget(vidPath[0]))
-                {
-                    vidPath[0] = processPath + defaultVideo;
-                    num_videos = 1;
                 }
             }
             catch (Exception e)
@@ -165,10 +160,12 @@ namespace ExerciseApp
 
             helpTextBox.AcceptsReturn = true;
             helpTextBox.Multiline = true;
-            helpTextBox.Size = new Size(700, 320);
+            helpTextBox.Size = helpPanel.Size;
             helpTextBox.MinimumSize = helpTextBox.Size;
             helpTextBox.BackColor = BackColor;
             getHelpMSG();
+
+            versionLabel.Text = string.Format("Phiên bản: {0}", appVersion);
         }
 
         private void getHelpMSG()
@@ -456,8 +453,8 @@ namespace ExerciseApp
 
         private void ExerciseApp_Leave(object sender, EventArgs e)
         {
-            this.TopMost = false;
-            this.SendToBack();
+            // this.TopMost = false;
+            // this.SendToBack();
         }
     }
 }
