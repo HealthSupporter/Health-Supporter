@@ -101,6 +101,7 @@
             helpTextBox = new TextBox();
             helpPanel = new Panel();
             versionLabel = new Label();
+            totalVideoLabel = new Label();
             sysSettingGBox.SuspendLayout();
             timeConfigGBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)stopHourUpDown).BeginInit();
@@ -824,6 +825,7 @@
             // videoSettingsPanel
             // 
             videoSettingsPanel.BorderStyle = BorderStyle.Fixed3D;
+            videoSettingsPanel.Controls.Add(totalVideoLabel);
             videoSettingsPanel.Controls.Add(keepOpeningForm2CheckBox);
             videoSettingsPanel.Controls.Add(playRandomCheckBox);
             videoSettingsPanel.Controls.Add(playAllVideoCheckBox);
@@ -924,6 +926,16 @@
             versionLabel.Name = "versionLabel";
             versionLabel.Size = new Size(0, 20);
             versionLabel.TabIndex = 33;
+            // 
+            // totalVideoLabel
+            // 
+            totalVideoLabel.AutoSize = true;
+            totalVideoLabel.Font = new Font("Segoe UI", 12F);
+            totalVideoLabel.Location = new Point(19, 388);
+            totalVideoLabel.Name = "totalVideoLabel";
+            totalVideoLabel.Size = new Size(131, 28);
+            totalVideoLabel.TabIndex = 5;
+            totalVideoLabel.Text = "Tổng video: 0";
             // 
             // ExerciseApp
             // 
@@ -1060,5 +1072,6 @@
         private TextBox helpTextBox;
         private Panel helpPanel;
         private Label versionLabel;
+        private Label totalVideoLabel;
     }
 }

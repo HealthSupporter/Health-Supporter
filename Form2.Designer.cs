@@ -36,13 +36,16 @@ namespace ExerciseApp
             timer1 = new System.Windows.Forms.Timer(components);
             mainLabel = new Label();
             timer2 = new System.Windows.Forms.Timer(components);
+            waitPictureBox = new PictureBox();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)axWindowsMediaPlayer1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)waitPictureBox).BeginInit();
             SuspendLayout();
             // 
             // panel1
             // 
             panel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            panel1.Controls.Add(waitPictureBox);
             panel1.Controls.Add(axWindowsMediaPlayer1);
             panel1.Location = new Point(12, 41);
             panel1.Name = "panel1";
@@ -78,6 +81,14 @@ namespace ExerciseApp
             // 
             timer2.Tick += timer2_Tick;
             // 
+            // waitPictureBox
+            // 
+            waitPictureBox.Location = new Point(328, 150);
+            waitPictureBox.Name = "waitPictureBox";
+            waitPictureBox.Size = new Size(125, 62);
+            waitPictureBox.TabIndex = 1;
+            waitPictureBox.TabStop = false;
+            // 
             // Form2
             // 
             AutoScaleMode = AutoScaleMode.Inherit;
@@ -96,6 +107,7 @@ namespace ExerciseApp
             Load += Form2_Load;
             panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)axWindowsMediaPlayer1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)waitPictureBox).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -107,5 +119,6 @@ namespace ExerciseApp
         private AxWMPLib.AxWindowsMediaPlayer axWindowsMediaPlayer1;
         private Label mainLabel;
         private System.Windows.Forms.Timer timer2;
+        private PictureBox waitPictureBox;
     }
 }

@@ -52,10 +52,22 @@ namespace ExerciseApp
                 decimal.TryParse(currentConfigs.Lookup("current_sleep_min_cfg"), out currentSleepMinConfig);
                 decimal.TryParse(currentConfigs.Lookup("current_sleep_sec_cfg"), out currentSleepSecConfig);
 
-                if (!validateTargetFile(vidPath[0], supportedFileType))
+                try
                 {
-                    MessageBox.Show("Tệp media trong thiết lập không phù hợp định dạng. Sử dụng video mặc định.");
-                    vidPath[0] = processPath + defaultVideo;
+                    List<string> lVideo = new();
+                    FileInfo fileInfo = new FileInfo(vidPath[0]);
+                    string parentDir = fileInfo.DirectoryName!;
+                    _internalRecursiveSearch(parentDir, ref lVideo);
+
+                    num_videos = lVideo.Count;
+                    multiple_videos = num_videos > 1 ? true : false;
+
+                    vidPath = [.. lVideo];
+                    textBox1.Text = vidPath[0];
+                    totalVideoLabel.Text = string.Format("Tổng video: {0}", num_videos);
+                } catch (Exception ex)
+                {
+                    MessageBox.Show(string.Format("Lỗi khi khôi phục thiết lập video: {0}", ex.Message));
                 }
 
                 hourUpDown.Value = currentHourConfig;
@@ -93,6 +105,7 @@ namespace ExerciseApp
             }
 
             processName = Process.GetCurrentProcess().ProcessName;
+            TopMost = false;
 
             stubInitialize();
             Invalidate();   // Redraw the windows
@@ -196,7 +209,7 @@ namespace ExerciseApp
             currentConfigs = new AppConfiguration(configPath, configNames);
             currentConfigs.Edit(configNames,
                 [
-                    string.Format(@"{0}\Asset\Default\default_video.mp4", processPath),
+                    string.Format(@"{0}\Asset\Default\default_video1.mp4", processPath),
                     "1",
                     "False",
                     "False",
@@ -216,7 +229,7 @@ namespace ExerciseApp
                 ]
                 );
 
-            vidPath[0] = processPath + @"\Asset\Default\default_video.mp4";
+            vidPath[0] = processPath + @"\Asset\Default\default_video1.mp4";
             num_videos = 1;
             play_random = false;
             multiple_videos = false;
@@ -394,7 +407,7 @@ namespace ExerciseApp
             {
                 if (num_videos == 1 && validateTargetFile(vidPath[0], supportedFileType))
                     return true;
-                for (int i = 1; i <= num_videos; i++)
+                for (int i = 0; i < num_videos; i++)
                 {
                     if (!validateTargetFile(vidPath[i], supportedFileType))
                     {
@@ -402,7 +415,7 @@ namespace ExerciseApp
                     }
                 }
             }
-            return false;
+            return true;
         }
 
         private DateTime changeDateTime(DateTime dt, decimal hour, decimal min, decimal sec, decimal day, decimal month, decimal year)
@@ -455,6 +468,29 @@ namespace ExerciseApp
         {
             // this.TopMost = false;
             // this.SendToBack();
+        }
+
+        private void _internalRecursiveSearch(string path, ref List<string> l)
+        {
+            try
+            {
+                foreach (string f in Directory.GetFiles(path))
+                {
+                    if (validateTargetFile(f, supportedFileType))
+                    {
+                        l.Add(f);
+                    }
+                }
+
+                foreach (string d in Directory.GetDirectories(path))
+                {
+                    _internalRecursiveSearch(d, ref l);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 }

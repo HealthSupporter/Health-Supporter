@@ -1,6 +1,4 @@
 ﻿using SelfImplement_Libraries;
-using System.Diagnostics;
-using System.Net.Http.Headers;
 
 namespace ExerciseApp
 {
@@ -60,38 +58,26 @@ namespace ExerciseApp
             {
                 Title = "Chọn video",
                 Filter = string.Format("Tệp video ({0}) | {0}", supportedFileType),
-                Multiselect = true,
+                Multiselect = false,
                 InitialDirectory = System.Environment.GetEnvironmentVariable("USERPROFILE"),
                 RestoreDirectory = true
             };
-            openFileDialog.Multiselect = true;
             DialogResult dialogResult = openFileDialog.ShowDialog();
 
 
             if (dialogResult == DialogResult.OK)
             {
-                int numVid = 0;
-                List<string> fileNames = new List<string>(openFileDialog.FileNames.Length);
-                foreach (var item in openFileDialog.FileNames)
-                {
-                    if (validateTargetFile(item, supportedFileType))
-                    {
-                        numVid++;
-                        fileNames.Add(item);
-                    }
-                }
+                List<string> lVideo = new();
+                FileInfo fileInfo = new FileInfo(openFileDialog.FileName);
+                string parentDir = fileInfo.DirectoryName!;
+                _internalRecursiveSearch(parentDir, ref lVideo);
 
-                if (numVid == 0)
-                {
-                    MessageBox.Show("KHÔNG CÓ VIDEO NÀO PHÙ HỢP ĐỊNH DẠNG. HÃY THỬ CHỌN TỆP KHÁC.", "Định dạng file không được hỗ trợ");
-                    num_videos = 0;
-                    vidPath[0] = string.Empty;
-                    return;
-                }
+                num_videos = lVideo.Count;
+                multiple_videos = num_videos > 1 ? true : false;
 
-                num_videos = numVid;
-                vidPath = fileNames;
+                vidPath = [.. lVideo];
                 textBox1.Text = vidPath[0];
+                totalVideoLabel.Text = string.Format("Tổng video: {0}", num_videos);
             }
             else
             {
@@ -291,7 +277,7 @@ namespace ExerciseApp
                 if (multiple_videos && num_videos < 2)
                 {
                     MessageBox.Show("Tùy chọn \"Phát tất cả video trong thư mục\" được bật khi chỉ 1 file");
-                    multiple_videos = playAllVideoCheckBox.Checked = play_random = false;
+                    multiple_videos = play_random = false;
                 }
 
                 stateLocked = true;
@@ -318,7 +304,6 @@ namespace ExerciseApp
             this.WindowState = FormWindowState.Normal;
             notifyIcon1.Visible = false;
             this.ShowInTaskbar = true;
-            this.TopMost = true;
             this.Show();
 
             var result = MessageBox.Show("Đã đến giờ nghỉ, bạn có muốn nghỉ ngơi và tập thể dục không?", "Đã đến giờ", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -406,6 +391,7 @@ namespace ExerciseApp
             timer1.Start();
             updateTime(currentHourConfig, currentMinuteConfig, currentSecondConfig);
             timer2.Start();
+            WindowState = FormWindowState.Minimized;
         }
 
         private void startwithWinBox_CheckedChanged(object? sender, EventArgs e)
@@ -758,6 +744,7 @@ namespace ExerciseApp
             */
 
             playRandomCheckBox.Enabled = multiple_videos;
+            playAllVideoCheckBox.Enabled = num_videos > 1 ? true : false;
             
             playRandomCheckBox.Checked = play_random;
             playAllVideoCheckBox.Checked = multiple_videos;

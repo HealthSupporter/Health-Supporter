@@ -17,6 +17,7 @@ namespace ExerciseApp
 
         private string[] videoFiles;
         private int playingIndex = 0;
+        private int maxPlayingIndex = 0;
 
 
         public Form2()
@@ -33,7 +34,11 @@ namespace ExerciseApp
             ProcessModule objCurrentModule = Process.GetCurrentProcess().MainModule;
             objKeyboardProcess = new LowLevelKeyboardProc(captureKey);
             ptrHook = SetWindowsHookEx(13, objKeyboardProcess, GetModuleHandle(objCurrentModule.ModuleName), 0);
+
             mainForm = (ExerciseApp)callingForm;
+            videoFiles = [.. mainForm.vidPath];
+            maxPlayingIndex = videoFiles.Length;
+            
             InitializeComponent();
         }
 
@@ -55,8 +60,21 @@ namespace ExerciseApp
 
         private string nextVideo()
         {
-            int index = mainForm.multiple_videos && mainForm.play_random && mainForm.num_videos > 1 ? randomIndex.Next(1, mainForm.vidPath.Count + 1) : 0;
-            return mainForm.vidPath[index];
+            if (mainForm.multiple_videos && mainForm.num_videos > 1)
+            {
+                if (mainForm.play_random)
+                {
+                    playingIndex = randomIndex.Next(1, maxPlayingIndex + 1);
+                }
+                else
+                {
+                    playingIndex = maxPlayingIndex % (playingIndex + 1);
+                }
+            } else
+            {
+                playingIndex = 0;
+            }
+            return videoFiles[playingIndex];
         }
 
         private void Form2_Load(object sender, EventArgs e)
@@ -87,6 +105,19 @@ namespace ExerciseApp
             //    return;
             // }
 
+            axWindowsMediaPlayer1.Ctlenabled = false;
+            axWindowsMediaPlayer1.uiMode = "none";
+
+            waitPictureBox.Visible = false;
+            waitPictureBox.Bounds = resolution;
+            waitPictureBox.Image = Image.FromFile(mainForm.processPath + "\\Asset\\panel.png");
+            
+            waitPictureBox.Load(mainForm.processPath + "\\Asset\\panel.png");
+            waitPictureBox.Location = new Point(-100, 0);
+            waitPictureBox.Update();
+            // Thread.Sleep(5000);
+            waitPictureBox.Visible = false;
+
             timer1.Start();
             timer2.Start();
             axWindowsMediaPlayer1.Ctlcontrols.play();
@@ -108,9 +139,9 @@ namespace ExerciseApp
                 pauseVid_and_ask();
             }
 
-            axWindowsMediaPlayer1.Ctlcontrols.pause();
-            performClose = true;
-            this.Close();
+            // axWindowsMediaPlayer1.Ctlcontrols.pause();
+            // performClose = true;
+            // this.Close();
         }
 
         private void timer2_Tick(object sender, EventArgs e)
@@ -185,11 +216,9 @@ namespace ExerciseApp
             switch (axWindowsMediaPlayer1.playState)
             {
                 case WMPPlayState.wmppsMediaEnded:
-                    if (mainForm.play_random)
-                    {
                         axWindowsMediaPlayer1.URL = nextVideo();
+                        axWindowsMediaPlayer1.Ctlcontrols.next();
                         axWindowsMediaPlayer1.Ctlcontrols.play();
-                    }
                     break;
                 default:
                     if (!pause_for_reason) axWindowsMediaPlayer1.Ctlcontrols.play();
