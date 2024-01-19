@@ -65,7 +65,8 @@ namespace ExerciseApp
                     vidPath = [.. lVideo];
                     textBox1.Text = vidPath[0];
                     totalVideoLabel.Text = string.Format("Tổng video: {0}", num_videos);
-                } catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     MessageBox.Show(string.Format("Lỗi khi khôi phục thiết lập video: {0}", ex.Message));
                 }
@@ -109,6 +110,11 @@ namespace ExerciseApp
 
             stubInitialize();
             Invalidate();   // Redraw the windows
+            
+            if (startWithSystem)
+            {
+                startCountButton_Click(new object(), new EventArgs());
+            }
             // End user generated code ----
 
             // In progress
@@ -183,12 +189,15 @@ namespace ExerciseApp
 
         private void getHelpMSG()
         {
+            helpTextBox.Text = string.Empty;
+
             string[] input = [];
             try { input = System.IO.File.ReadAllLines($"{processPath}\\{helpMsgPath}"); }
             catch
             {
                 MessageBox.Show("Không tìm thấy tệp help.txt, ngắt quyền truy cập vào tab Trợ giúp.", "Lỗi không tìm thấy tệp");
                 helpPanel.Enabled = false;
+                helpPanel.Visible = false;
                 return;
             }
 
@@ -492,5 +501,7 @@ namespace ExerciseApp
                 MessageBox.Show(ex.Message);
             }
         }
+
+        
     }
 }

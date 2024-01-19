@@ -410,6 +410,13 @@ namespace ExerciseApp
 
         private void helpButton_Click(object sender, EventArgs e)
         {
+            if (listUsePanel)
+            {
+                listUsePanel = false;
+            } else
+            {
+                getHelpMSG();
+            }
             mainPanel.Visible = false;
             timeSettingsPanel.Visible = false;
             videoSettingsPanel.Visible = false;
@@ -786,6 +793,26 @@ namespace ExerciseApp
                     e.Cancel = true;
                 }
             }
+        }
+
+        private bool listUsePanel = false;
+
+        private void listVideoLinkButton_Click(object sender, EventArgs e)
+        {
+            helpTextBox.Text = string.Empty;
+
+            helpTextBox.AppendText("ĐƯỜNG DẪN CÁC VIDEO:");
+            helpTextBox.AppendText(Environment.NewLine);
+
+            for (int i = 1; i <= vidPath.Count; i++)
+            {
+                helpTextBox.AppendText($"   {i}. Video: {vidPath[i - 1]}");
+                helpTextBox.AppendText(Environment.NewLine);
+                helpTextBox.AppendText(Environment.NewLine);
+            }
+
+            listUsePanel = true;
+            helpButton_Click(sender, e);
         }
     }
 }

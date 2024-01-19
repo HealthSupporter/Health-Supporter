@@ -93,6 +93,8 @@
             sysSettingsPanel = new Panel();
             mainTimer = new System.Windows.Forms.Timer(components);
             videoSettingsPanel = new Panel();
+            listVideoLinkButton = new Button();
+            totalVideoLabel = new Label();
             keepOpeningForm2CheckBox = new CheckBox();
             playRandomCheckBox = new CheckBox();
             playAllVideoCheckBox = new CheckBox();
@@ -101,7 +103,6 @@
             helpTextBox = new TextBox();
             helpPanel = new Panel();
             versionLabel = new Label();
-            totalVideoLabel = new Label();
             sysSettingGBox.SuspendLayout();
             timeConfigGBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)stopHourUpDown).BeginInit();
@@ -825,6 +826,7 @@
             // videoSettingsPanel
             // 
             videoSettingsPanel.BorderStyle = BorderStyle.Fixed3D;
+            videoSettingsPanel.Controls.Add(listVideoLinkButton);
             videoSettingsPanel.Controls.Add(totalVideoLabel);
             videoSettingsPanel.Controls.Add(keepOpeningForm2CheckBox);
             videoSettingsPanel.Controls.Add(playRandomCheckBox);
@@ -836,6 +838,26 @@
             videoSettingsPanel.Name = "videoSettingsPanel";
             videoSettingsPanel.Size = new Size(799, 425);
             videoSettingsPanel.TabIndex = 25;
+            // 
+            // listVideoLinkButton
+            // 
+            listVideoLinkButton.Location = new Point(591, 387);
+            listVideoLinkButton.Name = "listVideoLinkButton";
+            listVideoLinkButton.Size = new Size(201, 29);
+            listVideoLinkButton.TabIndex = 6;
+            listVideoLinkButton.Text = "Xem đường dẫn các video";
+            listVideoLinkButton.UseVisualStyleBackColor = true;
+            listVideoLinkButton.Click += listVideoLinkButton_Click;
+            // 
+            // totalVideoLabel
+            // 
+            totalVideoLabel.AutoSize = true;
+            totalVideoLabel.Font = new Font("Segoe UI", 12F);
+            totalVideoLabel.Location = new Point(19, 388);
+            totalVideoLabel.Name = "totalVideoLabel";
+            totalVideoLabel.Size = new Size(131, 28);
+            totalVideoLabel.TabIndex = 5;
+            totalVideoLabel.Text = "Tổng video: 0";
             // 
             // keepOpeningForm2CheckBox
             // 
@@ -903,9 +925,10 @@
             helpTextBox.Location = new Point(-2, -3);
             helpTextBox.Margin = new Padding(3, 4, 3, 4);
             helpTextBox.MaximumSize = new Size(799, 520);
+            helpTextBox.Multiline = true;
             helpTextBox.Name = "helpTextBox";
-            helpTextBox.ScrollBars = ScrollBars.Vertical;
-            helpTextBox.Size = new Size(799, 32);
+            helpTextBox.ScrollBars = ScrollBars.Both;
+            helpTextBox.Size = new Size(799, 27);
             helpTextBox.TabIndex = 31;
             // 
             // helpPanel
@@ -926,16 +949,6 @@
             versionLabel.Name = "versionLabel";
             versionLabel.Size = new Size(0, 20);
             versionLabel.TabIndex = 33;
-            // 
-            // totalVideoLabel
-            // 
-            totalVideoLabel.AutoSize = true;
-            totalVideoLabel.Font = new Font("Segoe UI", 12F);
-            totalVideoLabel.Location = new Point(19, 388);
-            totalVideoLabel.Name = "totalVideoLabel";
-            totalVideoLabel.Size = new Size(131, 28);
-            totalVideoLabel.TabIndex = 5;
-            totalVideoLabel.Text = "Tổng video: 0";
             // 
             // ExerciseApp
             // 
@@ -1073,5 +1086,6 @@
         private Panel helpPanel;
         private Label versionLabel;
         private Label totalVideoLabel;
+        private Button listVideoLinkButton;
     }
 }
